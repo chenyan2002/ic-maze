@@ -3,7 +3,8 @@ import Principal "mo:base/Principal";
 import Array "mo:base/Array";
 import Prim "mo:prim";
 import Iter "mo:base/Iter";
-import Error "mo:base/Error";
+import Prelude "mo:base/Prelude";
+//import Error "mo:base/Error";
 
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
@@ -34,7 +35,7 @@ actor {
     public shared(msg) func move(dir : Direction) : async Pos {
         let id = msg.caller;
         switch (state.get(id)) {
-        case null throw Error.error "call join first";
+        case null Prelude.unreachable(); //throw Error.error "call join first";
         case (?pos) {
                  let npos = switch dir {
                  case (#left) { x = pos.x; y = (pos.y - 1) % N };
