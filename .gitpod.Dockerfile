@@ -11,4 +11,5 @@ USER gitpod
 RUN sudo apt-get -q update \
  && wget https://sdk.dfinity.org/install.sh -O /tmp/install-sdk.sh \
  && sh -c 'yes Y | DFX_VERSION=0.5.8 sh /tmp/install-sdk.sh'
+ && dfx cache install
  
