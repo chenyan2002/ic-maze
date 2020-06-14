@@ -1,7 +1,7 @@
 {
   "canisters": {
     "maze": {
-      "main": "src/maze/main.mo",
+      "main": "src/main.mo",
       "type": "motoko"
     },
     "maze_assets": {
@@ -9,7 +9,7 @@
         "maze"
       ],
       "frontend": {
-        "entrypoint": "src/maze_assets/public/index.js",
+        "entrypoint": "src/maze_assets/index.js",
         "output": "canisters/maze_assets/assets"
       },
       "source": [
@@ -29,6 +29,5 @@
       "serve_root": "canisters/maze_assets/assets"
     }
   },
-  "dfx": "0.5.8",
   "version": 1
 }
