@@ -1,0 +1,18 @@
+tasks:
+  - init: npm install
+    command: |
+      gp await-port 8000
+      dfx build
+      dfx canister install --all
+      gp preview $(gp url 8000)/?canisterId=$(dfx canister id maze_assets)
+  - command: dfx start
+    name: replica
+    openMode: tab-after
+image:
+  file: .gitpod.Dockerfile
+ports:
+  - port: 8000
+    onOpen: ignore
+vscode:
+  extensions:
+    - dfinity-foundation.vscode-motoko@0.3.4:94sM6KNSH0sWMuF40BrlUQ==
