@@ -16,14 +16,13 @@ let N = 10;
 //
 // Immutable, all operations return new objects.
 class ModularNumber (i : Int) = {
-    func addMultipleOfNUntilNonNegative(i : Int) : Int {
-        var j = i;
-        while (j < 0) {
-           j += N;
-        };
-        j
+    // The % operator is weird: it returns a negative output when the input is negative.
+    // Hence we wrap it into a function
+    func moduloN(i : Int) : Nat {
+        let j = i%N;
+        Int.abs(if (j < 0) { j+N } else { j })
     };
-  var val : Nat = Int.abs(addMultipleOfNUntilNonNegative(i)% N); // The actual number. We will maintain as invariant that it should be inside [0, N).
+  var val : Nat = moduloN(i); // The actual number. We will maintain as invariant that it should be inside [0, N).
   public func get() : Nat {
      val
   };
