@@ -4,19 +4,23 @@ import Array "mo:base/Array";
 import Prim "mo:prim";
 import Iter "mo:base/Iter";
 import Prelude "mo:base/Prelude";
+import Hash "mo:base/Hash";
 //import Error "mo:base/Error";
 
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
 type State = (Principal, Pos);
+type Content = { #person: Principal; };
 
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
+func PosEq(x: Pos, y: Pos) : Bool = x.x == y.x and y.x == y.y;
+func PosHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
 
 let N = 10;
 
 actor {
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
-    var map = Array.tabulate<[var Nat8]>(N, func _ = Array.init<Nat8>(N, 0));
+    var map = H.HashMap<Pos, Content>(3, PosEq, PosHash);
     
     public shared(msg) func join() : async Principal {
         let id = msg.caller;
@@ -27,10 +31,10 @@ actor {
                  let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
                  let pos = { x = hash % N; y = (hash + 1234) % N };
                  state.set(id, pos);
-                 map[pos.x][pos.y] := 1;
+                 map.set(pos, #person(id));
                  id
              };
-        };        
+        };
     };
     public shared(msg) func move(dir : Direction) : async () {
         let id = msg.caller;
@@ -43,10 +47,13 @@ actor {
                  case (#up) { x = (pos.x - 1) % N; y = pos.y };
                  case (#down) { x = (pos.x + 1) % N; y = pos.y };                                  
                  };
-                 if (map[npos.x][npos.y] == Prim.natToNat8(0)) {
-                     state.set(id, npos);
-                     map[pos.x][pos.y] := 0;
-                     map[npos.x][npos.y] := 1;
+                 switch (map.get(npos)) {
+                 case (?content) ();
+                 case null {
+                          state.set(id, npos);
+                          ignore map.remove(pos);
+                          map.set(npos, #person(id));
+                      };
                  };
              };
         };
