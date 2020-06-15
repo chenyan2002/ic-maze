@@ -18,6 +18,8 @@ func PosHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
 
 let N = 10;
 
+let N = 10;
+
 actor {
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
     var map = H.HashMap<Pos, Content>(3, PosEq, PosHash);
