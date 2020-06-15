@@ -5,9 +5,67 @@ import Prim "mo:prim";
 import Iter "mo:base/Iter";
 import Prelude "mo:base/Prelude";
 import Int "mo:base/Int";
+import Text "mo:base/Text";
 //import Error "mo:base/Error";
 
 let N = 10;
+
+type CellContent = {
+    #free;
+    #wall;
+    #goal;
+    #busy;
+};
+func CellContentEq(a:CellContent, b:CellContent) : Bool {
+    switch (a,b) {
+        case (#free, #free) true;
+        case (#wall, #wall) true;
+        case (#goal, #goal) true;
+        case (#busy, #busy) true;
+        case (_, _) false;
+    }
+};
+
+
+let MAZE_INPUT : [ Text ] = [
+    ".#....#...",
+    "..###.#...",
+    "..#O#.#...",
+    "..#.#.....",
+    "......#...",
+    ".#....#...",
+    "......#...",
+    "......#...",
+    "......#...",
+    "......#...",
+];
+
+func parseCell(c : Char) : CellContent {
+    switch c {
+        case '#' { #wall };
+        case 'O' { #goal };
+        case _ { #free };
+    }
+};
+func plotCell(c : CellContent) : Char {
+    switch c {
+        case (#wall) { '#' };
+        case (#free) { '.' };
+        case (#goal) { 'O' };
+        case (#busy) { 'X' };
+    }
+};
+
+
+func parseMaze(rows : [ Text ]) : [var [ var CellContent]] {
+    Array.thaw(Array.map(
+        func (row:Text) : [ var CellContent] {
+            Iter.toArrayMut(Iter.map(parseCell, Text.toIter(row)))
+        },
+        rows
+    ))
+};
+
 
 // A member of Z/NZ for the above-defined N.
 //
@@ -35,7 +93,7 @@ func principalEq(x: Principal, y: Principal) : Bool = x == y;
 
 actor {
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
-    var map = Array.tabulate<[var Nat8]>(N, func _ = Array.init<Nat8>(N, 0));
+    var map = parseMaze(MAZE_INPUT);
     
     public shared(msg) func join() : async Principal {
         let id = msg.caller;
@@ -46,7 +104,7 @@ actor {
                  let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
                  let pos = { x = ModularNumber(hash); y =ModularNumber(hash + 1234) };
                  state.set(id, pos);
-                 map[pos.x.get()][pos.y.get()] := 1;
+                 map[pos.x.get()][pos.y.get()] := #busy;
                  id
              };
         };        
@@ -62,10 +120,11 @@ actor {
                  case (#up) { x = pos.x.add(-1); y = pos.y };
                  case (#down) { x = pos.x.add(+1); y = pos.y };                                  
                  };
-                 if (map[npos.x.get()][npos.y.get()] == Prim.natToNat8(0)) {
-                     state.set(id, npos);
-                     map[pos.x.get()][pos.y.get()] := 0;
-                     map[npos.x.get()][npos.y.get()] := 1;
+                 if (CellContentEq(map[npos.x.get()][npos.y.get()], #free)) {
+                         state.set(id, npos);
+                         map[pos.x.get()][pos.y.get()] := #free;
+                         map[npos.x.get()][npos.y.get()] := #busy;
+                    
                  };
              };
         };
@@ -81,4 +140,22 @@ actor {
                 state.iter())
         )
     };
+
+    // Returns a multi-line string showing th whole maze with the position of each player
+    public query func plotMaze() : async Text {
+    Array.foldl<Text, Text>(
+        func (a: Text, b:Text) : Text { a # "\n" # b},
+        "",
+        Array.map(
+            func (row : [var CellContent]) : Text {
+                Array.foldl<CellContent, Text>(
+                    func (a: Text, c:CellContent) : Text { a # Prim.charToText(plotCell(c))},
+                    "",
+                    Array.freeze(row)
+                )
+            },
+            Array.freeze(map)
+        )
+    );
+    }
 };
