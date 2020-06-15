@@ -143,11 +143,6 @@ actor {
 
     // Returns a multi-line string showing th whole maze with the position of each player
     public query func plotMaze() : async Text {
-    //    var rendered = "";
-    //    for (row in map) {
-    //        for ()
-    //        rendered.append('\n');
-    //    }
     Array.foldl<Text, Text>(
         func (a: Text, b:Text) : Text { a # "\n" # b},
         "",
