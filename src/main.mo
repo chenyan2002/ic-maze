@@ -77,9 +77,15 @@ actor {
         };
     };
 
-    type State = (Principal, Nat, Nat);
-    public query func getState() : async [State] {
+    // Objects of type 'ModularNumber' cannot be serialized because they contain functions,
+    // so we need to map them to Nat.
+    type SingleUserState = { user:Principal; x:Nat; y:Nat; };
+    public query func getState() : async [SingleUserState] {
 
-        Iter.toArray<State>(Iter.map<(Principal, Pos), State>(func(user : Principal, pos : Pos) : State { (user, pos.x.get(), pos.y.get() ) }, state.iter()))
+        Iter.toArray<SingleUserState>(
+            Iter.map<(Principal, Pos), SingleUserState>(
+                func(u : Principal, pos : Pos) : SingleUserState { {user=u; x=pos.x.get(); y=pos.y.get(); } },
+                state.iter())
+        )
     };
 };
