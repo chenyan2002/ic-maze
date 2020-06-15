@@ -16,16 +16,14 @@ const board = [[1,1,1,1,1,1,1,1,1,1],
                [1,0,0,0,0,0,0,0,0,1],
                [1,1,1,1,1,1,1,1,1,1]];               
 
-const symbols = [ "empty", "wall", "hero" ];
+const symbols = [ "", "wall", "hero" ];
 
 function generateMaze(dom) {
   for (let i = 0; i < N; i++) {
     const row = document.createElement('div');
-    //grids[i] = [];
     for (let j = 0; j < N; j++) {
       const grid = document.createElement('div');
       grid.className = symbols[board[i][j]];
-      //grids[i][j] = grid;
       const pos = new Pos(i,j);
       grids[pos] = grid;
       row.appendChild(grid);
@@ -54,23 +52,15 @@ async function mazeKeyPressHandler(e) {
   default:
     return;
   }
-  await canister.move(dir);
+  canister.move(dir);
+  const tmp = await canister.fakeMove(dir);
+  tmpState.update(tmp);
   e.preventDefault();
 }
 
 async function render() {
   const res = await canister.getState();
-  const new_state = res.map(e => {
-    const pos = Pos.fromPos(e._1_);
-    return [e._0_, pos]
-  });
-  for (const [id, pos] of state) {
-    grids[pos].classList.remove('hero');
-  }
-  for (const [id, pos] of new_state) {
-    grids[pos].classList.add('hero');
-  }
-  state = new_state;
+  state.update(res);
 }
 
 class Pos {
@@ -86,10 +76,31 @@ class Pos {
   }
 }
 
-// global states
+class State {
+  constructor() {
+    this._state = [];
+  };
+  update(state) {
+    const new_state = state.map(e => {
+      const pos = Pos.fromPos(e._1_);
+      return [e._0_, pos];
+    });
+    for (const [id, pos] of this._state) {
+      grids[pos].classList.remove('hero');
+    }
+    for (const [id, pos] of new_state) {
+      grids[pos].classList.add('hero');
+    }
+    this._state = new_state;
+  }
+}
 
+// global states
+// HTMLElements for maze, indexed by Pos class
 const grids = [];
-let state = [];
+
+let state = new State();
+let tmpState = new State();
 let myid;
 
 const maze = document.createElement('div');
@@ -119,4 +130,4 @@ async function init() {
 
 init();
 
-setInterval(render, 300);
+setInterval(render, 100);

@@ -44,6 +44,9 @@
   x-content: "\1F332";
   content: "\1F381";
 }
+#maze div.temp::after {
+    background-color: #aa8888;
+}
 #maze div.hero::after {
   content: "\1F6B6" !important;
 }

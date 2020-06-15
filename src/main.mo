@@ -13,33 +13,27 @@ type State = (Principal, Pos);
 type Content = { #person: Principal; };
 
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
-func PosEq(x: Pos, y: Pos) : Bool = x.x == y.x and y.x == y.y;
+func PosEq(x: Pos, y: Pos) : Bool = x.x == y.x and x.y == y.y;
 func PosHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
 
-let N = 10;
-
-let N = 10;
-
-actor {
+class Maze() {
+    let N = 10;
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
     var map = H.HashMap<Pos, Content>(3, PosEq, PosHash);
     
-    public shared(msg) func join() : async Principal {
-        let id = msg.caller;
+    public func join(id: Principal) {
         switch (state.get(id)) {
-        case (?pos) { id };
+        case (?pos) ();
         case null {
                  // TODO better random and check
                  let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
                  let pos = { x = hash % N; y = (hash + 1234) % N };
                  state.set(id, pos);
                  map.set(pos, #person(id));
-                 id
              };
         };
     };
-    public shared(msg) func move(dir : Direction) : async () {
-        let id = msg.caller;
+    public func move(id: Principal, dir: Direction) {
         switch (state.get(id)) {
         case null Prelude.unreachable(); //throw Error.error "call join first";
         case (?pos) {
@@ -60,7 +54,29 @@ actor {
              };
         };
     };
-    public query func getState() : async [State] {
+    public func outputState() : [State] {
         Iter.toArray<State>(state.iter())
+    }
+};
+
+
+actor {
+    let maze = Maze();
+    public shared(msg) func join() : async Principal {
+        let id = msg.caller;
+        maze.join(id);
+        id
     };
+    public shared(msg) func move(dir : Direction) : async () {
+        let id = msg.caller;
+        maze.move(id, dir);
+    };
+    public query func getState() : async [State] {
+        maze.outputState()
+    };
+    public query(msg) func fakeMove(dir : Direction) : async [State] {
+        let id = msg.caller;
+        maze.move(id, dir);
+        maze.outputState()
+    };    
 };
