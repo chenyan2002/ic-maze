@@ -67,10 +67,7 @@ async function render() {
   for (const [id, pos] of state) {
     grids[pos].classList.remove('hero');
   }
-  console.log(new_state);
   for (const [id, pos] of new_state) {
-    console.log(pos);
-    console.log(grids[pos]);
     grids[pos].classList.add('hero');
   }
   state = new_state;
