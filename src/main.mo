@@ -7,21 +7,18 @@ import Prelude "mo:base/Prelude";
 import Int "mo:base/Int";
 //import Error "mo:base/Error";
 
-
 let N = 10;
-
-
 
 // A member of Z/NZ for the above-defined N.
 //
 // Immutable, all operations return new objects.
 class ModularNumber (i : Int) = {
-    // The % operator is weird: it returns a negative output when the input is negative.
-    // Hence we wrap it into a function
-    func moduloN(i : Int) : Nat {
-        let j = i%N;
-        Int.abs(if (j < 0) { j+N } else { j })
-    };
+  // The % operator is weird: it returns a negative output when the input is negative.
+  // Hence we wrap it into a function
+  func moduloN(i : Int) : Nat {
+    let j = i%N;
+    Int.abs(if (j < 0) { j+N } else { j })
+  };
   var val : Nat = moduloN(i); // The actual number. We will maintain as invariant that it should be inside [0, N).
   public func get() : Nat {
      val
@@ -29,13 +26,10 @@ class ModularNumber (i : Int) = {
   public func add(delta : Int) : ModularNumber {
       ModularNumber ( val + delta)
   };
-
 };
-
 
 type Pos = { x : ModularNumber; y : ModularNumber };
 type Direction = { #left; #right; #up; #down };
-
 
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
 
@@ -81,7 +75,6 @@ actor {
     // so we need to map them to Nat.
     type SingleUserState = { user:Principal; x:Nat; y:Nat; };
     public query func getState() : async [SingleUserState] {
-
         Iter.toArray<SingleUserState>(
             Iter.map<(Principal, Pos), SingleUserState>(
                 func(u : Principal, pos : Pos) : SingleUserState { {user=u; x=pos.x.get(); y=pos.y.get(); } },
