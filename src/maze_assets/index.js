@@ -15,7 +15,6 @@ const board = [[1,1,1,1,1,1,1,1,1,1],
                [1,0,0,0,0,0,0,0,0,1],
                [1,0,0,0,0,0,0,0,0,1],
                [1,1,1,1,1,1,1,1,1,1]];               
-               
 
 const symbols = [ "empty", "wall", "hero" ];
 
@@ -55,11 +54,26 @@ async function mazeKeyPressHandler(e) {
   default:
     return;
   }
-  const npos = Pos.fromPos(await canister.move(dir));
-  grids[state].classList.remove('hero');
-  grids[npos].classList.add('hero');
-  state = npos;
+  await canister.move(dir);
   e.preventDefault();
+}
+
+async function render() {
+  const res = await canister.getState();
+  const new_state = res.map(e => {
+    const pos = Pos.fromPos(e._1_);
+    return [e._0_, pos]
+  });
+  for (const [id, pos] of state) {
+    grids[pos].classList.remove('hero');
+  }
+  console.log(new_state);
+  for (const [id, pos] of new_state) {
+    console.log(pos);
+    console.log(grids[pos]);
+    grids[pos].classList.add('hero');
+  }
+  state = new_state;
 }
 
 class Pos {
@@ -79,6 +93,7 @@ class Pos {
 
 const grids = [];
 let state = [];
+let myid;
 
 const maze = document.createElement('div');
 maze.id = "maze";
@@ -98,12 +113,13 @@ async function init() {
 
   join.addEventListener('click', () => {
     (async () => {
-      const pos = await canister.join();
-      state = Pos.fromPos(pos);
-      grids[state].className = 'hero';
+      const id = await canister.join();
+      myid = id;
+      render();
     })();
   });
 }
 
 init();
 
+setInterval(render, 300);

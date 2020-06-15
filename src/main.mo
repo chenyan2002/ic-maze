@@ -18,21 +18,21 @@ actor {
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
     var map = Array.tabulate<[var Nat8]>(N, func _ = Array.init<Nat8>(N, 0));
     
-    public shared(msg) func join() : async Pos {
+    public shared(msg) func join() : async Principal {
         let id = msg.caller;
         switch (state.get(id)) {
-        case (?pos) { pos };
+        case (?pos) { id };
         case null {
                  // TODO better random and check
                  let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
                  let pos = { x = hash % N; y = (hash + 1234) % N };
                  state.set(id, pos);
                  map[pos.x][pos.y] := 1;
-                 pos
+                 id
              };
         };        
     };
-    public shared(msg) func move(dir : Direction) : async Pos {
+    public shared(msg) func move(dir : Direction) : async () {
         let id = msg.caller;
         switch (state.get(id)) {
         case null Prelude.unreachable(); //throw Error.error "call join first";
@@ -47,16 +47,11 @@ actor {
                      state.set(id, npos);
                      map[pos.x][pos.y] := 0;
                      map[npos.x][npos.y] := 1;
-                     npos
-                 } else {
-                     pos
                  };
              };
-        };        
+        };
     };
-    public query func getState() : async ([State], [[Nat8]]) {
-        let s = Iter.toArray<State>(state.iter());
-        let m = Array.map<[var Nat8], [Nat8]>(func x = Array.freeze<Nat8>(x), map);
-        (s, m)        
+    public query func getState() : async [State] {
+        Iter.toArray<State>(state.iter())
     };
 };
