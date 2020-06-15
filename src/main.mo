@@ -4,15 +4,34 @@ import Array "mo:base/Array";
 import Prim "mo:prim";
 import Iter "mo:base/Iter";
 import Prelude "mo:base/Prelude";
+import Int "mo:base/Int";
 //import Error "mo:base/Error";
 
-type Pos = { x : Nat; y : Nat };
+let N = 10;
+
+// A member of Z/NZ for the above-defined N.
+//
+// Immutable, all operations return new objects.
+class ModularNumber (i : Int) = {
+  // The % operator is weird: it returns a negative output when the input is negative.
+  // Hence we wrap it into a function
+  func moduloN(i : Int) : Nat {
+    let j = i%N;
+    Int.abs(if (j < 0) { j+N } else { j })
+  };
+  var val : Nat = moduloN(i); // The actual number. We will maintain as invariant that it should be inside [0, N).
+  public func get() : Nat {
+     val
+  };
+  public func add(delta : Int) : ModularNumber {
+      ModularNumber ( val + delta)
+  };
+};
+
+type Pos = { x : ModularNumber; y : ModularNumber };
 type Direction = { #left; #right; #up; #down };
-type State = (Principal, Pos);
 
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
-
-let N = 10;
 
 actor {
     let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
@@ -25,9 +44,9 @@ actor {
         case null {
                  // TODO better random and check
                  let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
-                 let pos = { x = hash % N; y = (hash + 1234) % N };
+                 let pos = { x = ModularNumber(hash); y =ModularNumber(hash + 1234) };
                  state.set(id, pos);
-                 map[pos.x][pos.y] := 1;
+                 map[pos.x.get()][pos.y.get()] := 1;
                  id
              };
         };        
@@ -38,20 +57,28 @@ actor {
         case null Prelude.unreachable(); //throw Error.error "call join first";
         case (?pos) {
                  let npos = switch dir {
-                 case (#left) { x = pos.x; y = (pos.y - 1) % N };
-                 case (#right) { x = pos.x; y = (pos.y + 1) % N };
-                 case (#up) { x = (pos.x - 1) % N; y = pos.y };
-                 case (#down) { x = (pos.x + 1) % N; y = pos.y };                                  
+                 case (#left) { x = pos.x; y = pos.y.add(-1); };
+                 case (#right) { x = pos.x; y = pos.y.add(+1); };
+                 case (#up) { x = pos.x.add(-1); y = pos.y };
+                 case (#down) { x = pos.x.add(+1); y = pos.y };                                  
                  };
-                 if (map[npos.x][npos.y] == Prim.natToNat8(0)) {
+                 if (map[npos.x.get()][npos.y.get()] == Prim.natToNat8(0)) {
                      state.set(id, npos);
-                     map[pos.x][pos.y] := 0;
-                     map[npos.x][npos.y] := 1;
+                     map[pos.x.get()][pos.y.get()] := 0;
+                     map[npos.x.get()][npos.y.get()] := 1;
                  };
              };
         };
     };
-    public query func getState() : async [State] {
-        Iter.toArray<State>(state.iter())
+
+    // Objects of type 'ModularNumber' cannot be serialized because they contain functions,
+    // so we need to map them to Nat.
+    type SingleUserState = { user:Principal; x:Nat; y:Nat; };
+    public query func getState() : async [SingleUserState] {
+        Iter.toArray<SingleUserState>(
+            Iter.map<(Principal, Pos), SingleUserState>(
+                func(u : Principal, pos : Pos) : SingleUserState { {user=u; x=pos.x.get(); y=pos.y.get(); } },
+                state.iter())
+        )
     };
 };
