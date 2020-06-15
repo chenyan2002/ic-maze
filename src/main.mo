@@ -92,8 +92,8 @@ type Direction = { #left; #right; #up; #down };
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
 
 actor {
-    flexible let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
-    flexible var map = parseMaze(MAZE_INPUT);
+    let state = H.HashMap<Principal, Pos>(3, principalEq, Principal.hash);
+    var map = parseMaze(MAZE_INPUT);
     
     public shared(msg) func join() : async Principal {
         let id = msg.caller;
