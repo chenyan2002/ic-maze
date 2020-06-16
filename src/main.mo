@@ -13,7 +13,6 @@ import Buf "mo:base/Buf";
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
 
-//type State = (Principal, Pos);
 type Content = { #person: Principal; #wall };
 
 type Msg = { seq: Nat; dir: Direction };
@@ -120,6 +119,11 @@ class Maze() {
 
 actor {
     let maze = Maze();
+    public func initMap(m: [(Pos, Content)]) : async () {
+        for ((pos, content) in m.vals()) {
+            maze.map.set(pos, content);
+        };
+    };
     public shared(msg) func join() : async (Principal, Nat) {
         let id = msg.caller;
         let state = maze.join(id);
@@ -133,13 +137,15 @@ actor {
         maze.outputState()
     };
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
-        (maze.outputMap(), maze.getSeq(msg.caller))
+        let processedSeq = maze.getSeq(msg.caller);
+        (maze.outputMap(), processedSeq)
     };
     public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
         let id = msg.caller;
+        let processedSeq = maze.getSeq(msg.caller);
         for (dir in dirs.vals()) {
             maze.move(id, dir);
         };
-        (maze.outputMap(), maze.getSeq(id))
+        (maze.outputMap(), processedSeq)
     };
 };

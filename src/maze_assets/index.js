@@ -32,20 +32,18 @@ function generateMaze(dom) {
   }
 }
 
-const pendingMoves = [];
+let pendingMoves = [];
 
 async function mazeKeyPressHandler(e) {
   let dir;
   switch(e.keyCode) {
   case 37: // left
-    maze.classList.remove('face-right');
     dir = {left:null};
     break;
   case 38: // up
     dir = {up:null};
     break;
   case 39: // right
-    maze.classList.add('face-right');
     dir = {right:null};
     break;
   case 40: //  down
@@ -54,14 +52,18 @@ async function mazeKeyPressHandler(e) {
   default:
     return;
   }
+  // Assign seq number to move msg
   const msg = {};
   msg.seq = myseq++;
   msg.dir = dir;
+  // Call move without waiting for reply
   canister.move(msg);
+  // Query move with pendingMoves
   pendingMoves.push(msg);
   const tmp = await canister.fakeMove(pendingMoves);
   tmpState.update(tmp);
-  pendingMoves = pendingMoves.filter(m => m.seq > processedSeq);
+  // Remove processed moves
+  pendingMoves = pendingMoves.filter(m => m.seq >= processedSeq);
   await render();
   e.preventDefault();
 }
@@ -70,6 +72,10 @@ async function mazeKeyPressHandler(e) {
 async function render() {
   const res = await canister.getMap();
   state.update(res);
+  const pending = myseq - processedSeq;
+  score.innerText = processedSeq.toString();
+  if (pending > 0)
+    score.innerText += " pending: " + pending.toString();
 }
 
 class Pos {
@@ -138,15 +144,23 @@ let myid;
 let myseq;
 let processedSeq;
 
-const maze = document.createElement('div');
-maze.id = "maze";
+const score = document.createElement('div');
+score.id = "maze_score";
 
 async function init() {
   const container = document.createElement('div');
   container.id = "maze_container";
+  const maze = document.createElement('div');
+  maze.id = "maze";  
   generateMaze(maze);
   container.appendChild(maze);
   document.body.replaceChild(container, document.getElementById('app'));
+
+  document.body.appendChild(score);
+
+  let div = document.createElement('div');
+  div.id = "maze_message";
+  document.body.appendChild(div);  
 
   document.addEventListener("keydown", mazeKeyPressHandler, false);
   
@@ -159,11 +173,10 @@ async function init() {
       const res = await canister.join();
       myid = res[0];
       myseq = res[1].toNumber();
-      render();
+      setInterval(render, 200);
     })();
   });
 }
 
 init();
 
-setInterval(render, 200);

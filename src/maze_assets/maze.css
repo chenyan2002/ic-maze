@@ -96,7 +96,7 @@
   text-align: left;
 }
 #maze_score::before {
-  content: "Score: ";
+  content: "Steps: ";
 }
 #maze_score.has-key::after {
   content: "\00a0\1F511";
