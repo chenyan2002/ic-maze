@@ -3,16 +3,17 @@ import './maze.css';
 
 // util for creating maze
 
-const N = 10;
+const N1 = 18;
+const N2 = 39;
 
 const symbols = [ "", "wall", "hero", "trophy", "beast", "alien", "arms", "dog", "snow", "robot", "zombie" ];
 
 async function generateMaze(dom) {
   let f = await canister.getMap();
   // First create the empty map
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < N1; i++) {
     const row = document.createElement('div');
-    for (let j = 0; j < N; j++) {
+    for (let j = 0; j < N2; j++) {
       const grid = document.createElement('div');
       const pos = new Pos(i,j);
       grids[pos] = grid;
