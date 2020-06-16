@@ -71,12 +71,12 @@ class Maze() {
         switch (players.get(id)) {
             case (?state) { state };
             case null {
-                var npos = { x = Random.next() % N; y = (Random.next() + 1234) % N };
+                var npos = { x = Random.next() % N; y = Random.next() % N };
                 label L loop {
                     switch (map.get(npos)) {
                       case (?content) {
                             //blocked
-                            npos := { x = Random.next() % N; y = (Random.next() + 1234) % N };
+                            npos := { x = Random.next() % N; y = Random.next() % N };
                         };
                         case null { 
                             break L 
