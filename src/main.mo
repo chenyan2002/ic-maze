@@ -119,11 +119,7 @@ class Maze() {
 
 actor {
     let maze = Maze();
-    public func initMap(m: [(Pos, Content)]) : async () {
-        for ((pos, content) in m.vals()) {
-            maze.map.set(pos, content);
-        };
-    };
+    
     public shared(msg) func join() : async (Principal, Nat) {
         let id = msg.caller;
         let state = maze.join(id);
