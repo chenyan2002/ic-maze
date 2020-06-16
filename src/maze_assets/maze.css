@@ -4,7 +4,7 @@
   box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
 }
 #maze {
-  background-color: #a7c53f;
+  background-color: #dbcfeb;
   background-image: radial-gradient(circle at 0% 0%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at center, rgba(0,0,0,0.1) 50%, transparent 50%), radial-gradient(circle at 100% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 0% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 100% 0%, transparent 50%, rgba(0,0,0,0.1) 50%);
   background-size: 12em 12em;
 }
