@@ -48,6 +48,74 @@
     background-color: #45aa45;
     opacity: 0.6;
 }
+
+#maze div.trophy:after {
+  content: "\1F3C6";
+}
+
+#maze div.alien::after {
+  background-image: url(https://tinyurl.com/yah4xfsm) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.arms::after {
+  background-image: url(https://tinyurl.com/y8mkh5g8) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.beast::after {
+  background-image: url(https://tinyurl.com/yayqy8vj) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.dog::after {
+  background-image: url(https://tinyurl.com/yd5h4y3l) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.robot::after {
+  background-image: url(https://tinyurl.com/y7b475cz) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.snow::after {
+  background-image: url(https://tinyurl.com/ycfptbme) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
+#maze div.zombie::after {
+  background-image: url(https://tinyurl.com/y9j5wwhe) !important;
+  background-size: 1em 1em;
+  display: inline-block;
+  content: "";
+  width: 1em;
+  height: 1em;
+}
+
 #maze div.hero::after {
   background-image: url(https://dfinity.org/static/0d206f7f9157235a931bd50a4c664d70/67d6c/motokoLogo.png) !important;
   background-size: 1em 1em;

@@ -5,10 +5,9 @@ import './maze.css';
 
 const N = 10;
 
-const symbols = [ "", "wall", "hero" ];
+const symbols = [ "", "wall", "hero", "trophy" ];
 
 async function generateMaze(dom) {
-  console.log("generateMaze");
   let f = await canister.getMap();
   // First create the empty map
   for (let i = 0; i < N; i++) {
@@ -28,6 +27,9 @@ async function generateMaze(dom) {
     let content = cellEntry._1_;
     if (typeof content.wall !== 'undefined') {
       grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "wall";
+    }
+    if (typeof content.trophy !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "trophy";
     }
   })
 }
@@ -101,6 +103,8 @@ class Map {
       return "wall"
     } else if (content.hasOwnProperty("person")) {
       return "hero"
+    } else if (content.hasOwnProperty("trophy")) {
+      return "trophy"
     } else
       return ""
   }
