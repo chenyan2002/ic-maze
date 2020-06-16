@@ -26,6 +26,15 @@ func principalEq(x: Principal, y: Principal) : Bool = x == y;
 func posEq(x: Pos, y: Pos) : Bool = x.x == y.x and x.y == y.y;
 func posHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
 
+object Random {
+    //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
+  var x = 4;
+  public func next() : Nat {
+    x := (123138118391*x + 133489131) % 9999;
+    x
+  };
+};
+
 class Maze() {
     let MAZE_INPUT : [ [ Nat ] ] =
         [[1,1,1,1,1,1,1,1,1,1],
@@ -57,16 +66,25 @@ class Maze() {
     
     public func join(id: Principal) : PlayerState {
         switch (players.get(id)) {
-        case (?state) { state };
-        case null {
-                 // TODO better random and check
-                 let hash = Prim.abs(Prim.word32ToInt(Principal.hash(id)));
-                 let new_pos = { x = hash % N; y = (hash + 1234) % N };
-                 let state = { pos = new_pos; seq = 0; msgs = Heap.Heap<Msg>(msgOrd) };
-                 players.set(id, state);
-                 map.set(new_pos, #person(id));
-                 state
-             };
+            case (?state) { state };
+            case null {
+                var npos = { x = Random.next() % N; y = (Random.next() + 1234) % N };
+                label L loop {
+                    switch (map.get(npos)) {
+                      case (?content) {
+                            //blocked
+                            npos := { x = Random.next() % N; y = (Random.next() + 1234) % N };
+                        };
+                        case null { 
+                            break L 
+                        };
+                    };
+                };  
+                let state = { pos = npos; seq = 0; msgs = Heap.Heap<Msg>(msgOrd) };
+                players.set(id, state);
+                map.set(npos, #person(id));
+                state      
+            };
         };
     };
     public func move(id: Principal, msg: Msg) {
