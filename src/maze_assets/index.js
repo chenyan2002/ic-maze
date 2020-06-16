@@ -3,14 +3,13 @@ import './maze.css';
 
 // util for creating maze
 
-var N;
+const N = 10;
 
 const symbols = [ "", "wall", "hero" ];
 
 async function generateMaze(dom) {
   console.log("generateMaze");
   let f = await canister.getMap();
-  N = f[1].c[0];
   // First create the empty map
   for (let i = 0; i < N; i++) {
     const row = document.createElement('div');

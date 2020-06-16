@@ -111,8 +111,10 @@ class Maze() {
         };
     };
     public func getSeq(id: Principal) : Nat {
-        let state = Option.unwrap(players.get(id));
-        state.seq
+        switch (players.get(id)) {
+        case null 0;
+        case (?state) state.seq;
+        };
     };
     func outputHeap(x: Heap.Heap<Msg>) : [Msg] {
         let buf = Buf.Buf<Msg>(3);
@@ -158,9 +160,9 @@ actor {
     };
     // Output:
     // - Array of non-empty cells
-    // - Width of the game map
+    // - Processed sequence number    
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
-        (maze.outputMap(), maze.N)
+        (maze.outputMap(), maze.getSeq(msg.caller))
     };
     public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
         let id = msg.caller;
