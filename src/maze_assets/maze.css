@@ -48,7 +48,15 @@
     background-color: #45aa45;
     opacity: 0.6;
 }
-
+#maze div.coffee:after {
+  content: "\2615";
+}
+#maze div.plant:after {
+  content: "\1F334";
+}
+#maze div.olive:after {
+  content: "\1F415";
+}
 #maze div.trophy:after {
   content: "\1F3C6";
 }
