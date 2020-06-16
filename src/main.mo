@@ -27,9 +27,33 @@ func posEq(x: Pos, y: Pos) : Bool = x.x == y.x and x.y == y.y;
 func posHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
 
 class Maze() {
-    let N = 10;
+    let MAZE_INPUT : [ [ Nat ] ] =
+        [[1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,1,0,0,1],
+        [1,0,1,0,0,0,1,0,0,1],
+        [1,0,1,0,0,0,0,0,0,1],
+        [1,0,1,0,0,0,1,0,0,1],
+        [1,0,1,0,1,1,1,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1]];
+    public let N = 10;
+
     public let players = H.HashMap<Principal, PlayerState>(3, principalEq, Principal.hash);
-    public let map = H.HashMap<Pos, Content>(3, posEq, posHash);
+
+    func createInitialMap() : H.HashMap<Pos, Content> {
+        var m = H.HashMap<Pos, Content>(3, posEq, posHash);
+        for (i in Iter.range(0, N-1)) {
+            for (j in Iter.range(0, N-1)) {
+                if (MAZE_INPUT[i][j] == 1) {
+                    m.set({x=i; y=j}, #wall);
+                };
+            };
+        };
+        m
+    };
+    public let map = createInitialMap();
     
     public func join(id: Principal) : PlayerState {
         switch (players.get(id)) {
@@ -132,9 +156,11 @@ actor {
     public query func getState() : async [OutputState] {
         maze.outputState()
     };
+    // Output:
+    // - Array of non-empty cells
+    // - Width of the game map
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
-        let processedSeq = maze.getSeq(msg.caller);
-        (maze.outputMap(), processedSeq)
+        (maze.outputMap(), maze.N)
     };
     public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
         let id = msg.caller;
