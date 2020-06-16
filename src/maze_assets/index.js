@@ -5,7 +5,7 @@ import './maze.css';
 
 const N = 10;
 
-const symbols = [ "", "wall", "hero", "trophy" ];
+const symbols = [ "", "wall", "hero", "trophy", "beast", "alien", "arms", "dog", "snow", "robot", "zombie" ];
 
 async function generateMaze(dom) {
   let f = await canister.getMap();
@@ -30,6 +30,9 @@ async function generateMaze(dom) {
     }
     if (typeof content.trophy !== 'undefined') {
       grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "trophy";
+    }
+    if (typeof content.beast !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "beast";
     }
   })
 }
@@ -105,6 +108,20 @@ class Map {
       return "hero"
     } else if (content.hasOwnProperty("trophy")) {
       return "trophy"
+    } else if (content.hasOwnProperty("alien")) {
+      return "alien"
+    } else if (content.hasOwnProperty("arms")) {
+      return "arms"
+    } else if (content.hasOwnProperty("beast")) {
+      return "beast"
+    } else if (content.hasOwnProperty("dog")) {
+      return "dog"
+    } else if (content.hasOwnProperty("robot")) {
+      return "robot"
+    } else if (content.hasOwnProperty("snow")) {
+      return "snow"
+    } else if (content.hasOwnProperty("zombie")) {
+      return "zombie"
     } else
       return ""
   }

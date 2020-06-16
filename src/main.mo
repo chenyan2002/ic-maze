@@ -13,7 +13,7 @@ import Buf "mo:base/Buf";
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
 
-type Content = { #person: Principal; #wall; #trophy };
+type Content = { #person: Principal; #wall; #trophy; #beast };
 
 type Msg = { seq: Nat; dir: Direction };
 func msgOrd(x: Msg, y: Msg) : {#lt;#gt} { if (x.seq < y.seq) #lt else #gt };
@@ -25,6 +25,15 @@ type OutputGrid = (Pos, Content);
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
 func posEq(x: Pos, y: Pos) : Bool = x.x == y.x and x.y == y.y;
 func posHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
+func nat2Dir(x: Nat) : Direction {
+    let dir = switch (x % 4) {
+        case (0) { #left };
+        case (1) { #right };
+        case (2) { #up };
+        case (_) { #down };                              
+    };
+    dir
+};
 
 object Random {
     //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
@@ -48,8 +57,21 @@ class Maze() {
         [1,0,0,0,0,0,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1]];
     public let N = 10;
+    
+    public var beast_pos = {x = 1; y = 1};
 
     public let players = H.HashMap<Principal, PlayerState>(3, principalEq, Principal.hash);
+
+
+    func newPos(pos:Pos, dir:Direction) : Pos {
+        let npos = switch (dir) {
+            case (#left) { x = pos.x; y = (pos.y - 1) % N };
+            case (#right) { x = pos.x; y = (pos.y + 1) % N };
+            case (#up) { x = (pos.x - 1) % N; y = pos.y };
+            case (#down) { x = (pos.x + 1) % N; y = pos.y };                                  
+        };
+        npos
+    };
 
     func createInitialMap() : H.HashMap<Pos, Content> {
         var m = H.HashMap<Pos, Content>(3, posEq, posHash);
@@ -63,6 +85,7 @@ class Maze() {
                 };
             };
         };
+        m.set(beast_pos, #beast);
         m
     };
     public let map = createInitialMap();
@@ -97,22 +120,32 @@ class Maze() {
         };
         processState(id);
     };
+    public func moveBeast() {
+        let npos = newPos(beast_pos, nat2Dir(Random.next()));
+        switch (map.get(npos)) {
+            case (?content) {
+                //blocked
+            };
+            case null { 
+            // empty
+                map.set(npos, #beast);
+                ignore map.remove(beast_pos);
+                beast_pos := npos;  
+            };
+        };
+    };
     public func processState(id: Principal) {
         loop {
             let state = Option.unwrap(players.get(id));
             switch (state.msgs.peekMin()) {
-            case null return;
-            case (?msg) {
+                case null return;
+                case (?msg) {
                      if (state.seq > msg.seq) Prelude.unreachable();
                      if (state.seq < msg.seq) return;
+                     moveBeast();
                      state.msgs.removeMin();
                      // seq matches, try move the position
-                     let npos = switch (msg.dir) {
-                     case (#left) { x = state.pos.x; y = (state.pos.y - 1) % N };
-                     case (#right) { x = state.pos.x; y = (state.pos.y + 1) % N };
-                     case (#up) { x = (state.pos.x - 1) % N; y = state.pos.y };
-                     case (#down) { x = (state.pos.x + 1) % N; y = state.pos.y };                                  
-                     };
+                     let npos = newPos(state.pos, msg.dir);   
                      switch (map.get(npos)) {
                      case (?content) {
                               // blocked
