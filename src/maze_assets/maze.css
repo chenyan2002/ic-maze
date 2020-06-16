@@ -44,6 +44,10 @@
   x-content: "\1F332";
   content: "\1F381";
 }
+#maze div.temp::after {
+    background-color: #aa3388;
+    opacity: 0.6;
+}
 #maze div.hero::after {
   content: "\1F6B6" !important;
 }
@@ -92,7 +96,7 @@
   text-align: left;
 }
 #maze_score::before {
-  content: "Score: ";
+  content: "Steps: ";
 }
 #maze_score.has-key::after {
   content: "\00a0\1F511";
