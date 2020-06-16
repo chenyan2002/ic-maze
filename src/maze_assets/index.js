@@ -1,4 +1,5 @@
 import canister from 'ic:canisters/maze';
+//import asset from 'ic:canisters/maze_assets';
 import './maze.css';
 
 // util for creating maze
@@ -64,21 +65,14 @@ async function mazeKeyPressHandler(e) {
   // Remove processed moves
   pendingMoves = pendingMoves.filter(m => m.seq >= processedSeq);
   // send p2p msgs
-  const others = state.getOtherPlayers();
+  const others = tmpState.getOtherPlayers();
   others.forEach(id => {
     const conn = peer.connect(id, { debug: 2 });
-    conn.send(pendingMoves);
-    conn.on('data', data => {
-      console.log(data);
-    });
-    //console.log(conn);
-    /*conn.on('open', () => {
-      console.log(id, pendingMoves);
+    conn.on('open', () => {
+      console.log("send", pendingMoves);
       conn.send(pendingMoves);
-    });*/
-    //conn.close();
+    });
   });
-  
   
   await render();
   e.preventDefault();
@@ -92,6 +86,12 @@ async function render() {
   score.innerText = processedSeq.toString();
   if (pending > 0)
     score.innerText += " pending: " + pending.toString();
+  // receive p2p msgs
+  peer.on('connection', conn => {
+    conn.on('data', data => {
+      console.log("recv", data);
+    });
+  });
 }
 
 class Pos {
