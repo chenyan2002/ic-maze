@@ -62,7 +62,6 @@ async function mazeKeyPressHandler(e) {
   //console.log(pendingMoves);
   const tmp = await canister.fakeMove(pendingMoves);
   tmpState.update(tmp);
-  //console.log(tmpState);
   await render();
   e.preventDefault();
 }
@@ -155,4 +154,4 @@ async function init() {
 
 init();
 
-setInterval(render, 300);
+setInterval(render, 200);

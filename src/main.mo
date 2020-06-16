@@ -48,12 +48,14 @@ class Maze() {
     };
     public func move(id: Principal, msg: Msg) {
         let state = Option.unwrap(players.get(id));
-        state.msgs.add(msg);
+        if (state.seq <= msg.seq) {
+            state.msgs.add(msg);
+        };
         processState(id);
     };
     public func processState(id: Principal) {
-        let state = Option.unwrap(players.get(id));
         loop {
+            let state = Option.unwrap(players.get(id));
             switch (state.msgs.peekMin()) {
             case null return;
             case (?msg) {
@@ -90,7 +92,10 @@ class Maze() {
         label L loop {
             switch (x.peekMin()) {
             case null { break L };
-            case (?msg) { buf.add(msg) };
+            case (?msg) {
+                     buf.add(msg);
+                     x.removeMin();
+                 };
             };
         };
         buf.toArray()
@@ -125,7 +130,7 @@ actor {
     };
     public query func getMap() : async [OutputGrid] {
         maze.outputMap()
-    };    
+    };
     public query(msg) func fakeMove(dirs : [Msg]) : async [OutputGrid] {
         let id = msg.caller;
         for (dir in dirs.vals()) {
