@@ -24,7 +24,7 @@ async function generateMaze(dom) {
   }
   // Then populate it
   let sparse = f[0];
-  sparse.forEach(function (cellEntry) {
+  sparse.forEach((cellEntry) => {
     let pos = cellEntry._0_;
     let content = cellEntry._1_;
     if (typeof content.wall !== 'undefined') {
