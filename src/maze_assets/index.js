@@ -8,7 +8,6 @@ const N = 10;
 const symbols = [ "", "wall", "hero" ];
 
 async function generateMaze(dom) {
-  console.log("generateMaze");
   let f = await canister.getMap();
   // First create the empty map
   for (let i = 0; i < N; i++) {
@@ -64,6 +63,23 @@ async function mazeKeyPressHandler(e) {
   tmpState.update(tmp);
   // Remove processed moves
   pendingMoves = pendingMoves.filter(m => m.seq >= processedSeq);
+  // send p2p msgs
+  const others = state.getOtherPlayers();
+  others.forEach(id => {
+    const conn = peer.connect(id, { debug: 2 });
+    conn.send(pendingMoves);
+    conn.on('data', data => {
+      console.log(data);
+    });
+    //console.log(conn);
+    /*conn.on('open', () => {
+      console.log(id, pendingMoves);
+      conn.send(pendingMoves);
+    });*/
+    //conn.close();
+  });
+  
+  
   await render();
   e.preventDefault();
 }
@@ -104,24 +120,37 @@ class Map {
     } else
       return ""
   }
+  getOtherPlayers() {
+    const list = [];
+    for (const pos in this._grids) {
+      const person = this._grids[pos].person;
+      if (typeof person !== 'undefined') {
+        const id = person.toText().slice(3);
+        if (id != myid) {
+          list.push(id);
+        }
+      }
+    }
+    return list;
+  }
   // update map and draw the diff
   update(g) {
     processedSeq = g[1];
     const new_grids = [];    
     g[0].forEach(grid => {
       const pos = Pos.fromPos(grid._0_);
-      new_grids[pos] = Map.getGridType(grid._1_);
+      new_grids[pos] = grid._1_;
     });
 
     for (const pos in this._grids) {
-      const type = this._grids[pos];
+      const type = Map.getGridType(this._grids[pos]);
       grids[pos].classList.remove(type);
       if (!this._isFinal) {
         grids[pos].classList.remove("temp");
       }
     }
     for (const pos in new_grids) {
-      const type = new_grids[pos];
+      const type = Map.getGridType(new_grids[pos]);
       grids[pos].classList.add(type);
       if (!this._isFinal) {
         grids[pos].classList.add("temp");
@@ -143,11 +172,17 @@ let tmpState = new Map(false);
 let myid;
 let myseq;
 let processedSeq;
+let peer;
 
 const score = document.createElement('div');
 score.id = "maze_score";
 
-async function init() {
+function init() {
+  const link = document.createElement('script');
+  link.setAttribute('src', 'https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js');
+  link.setAttribute('type', 'text/javascript');
+  document.getElementsByTagName("head")[0].appendChild(link);
+  
   const container = document.createElement('div');
   container.id = "maze_container";
   const maze = document.createElement('div');
@@ -160,7 +195,7 @@ async function init() {
 
   let div = document.createElement('div');
   div.id = "maze_message";
-  document.body.appendChild(div);  
+  document.body.appendChild(div);
 
   document.addEventListener("keydown", mazeKeyPressHandler, false);
   
@@ -171,8 +206,16 @@ async function init() {
   join.addEventListener('click', () => {
     (async () => {
       const res = await canister.join();
-      myid = res[0];
+      myid = res[0].toText().slice(3);
       myseq = res[1].toNumber();
+      // create p2p object
+      peer = new Peer(myid, {
+        host: 'localhost',
+        port: 9000,
+        path: '/myapp',
+        debug: 2
+      });
+      // set timer
       setInterval(render, 200);
     })();
   });
