@@ -3,33 +3,34 @@ import './maze.css';
 
 // util for creating maze
 
-const N = 10;
-
-const board = [[1,1,1,1,1,1,1,1,1,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,0,0,0,0,0,0,0,0,1],
-               [1,1,1,1,1,1,1,1,1,1]];               
+var N;
 
 const symbols = [ "", "wall", "hero" ];
 
-function generateMaze(dom) {
+async function generateMaze(dom) {
+  console.log("generateMaze");
+  let f = await canister.getMap();
+  N = f[1].c[0];
+  // First create the empty map
   for (let i = 0; i < N; i++) {
     const row = document.createElement('div');
     for (let j = 0; j < N; j++) {
       const grid = document.createElement('div');
-      grid.className = symbols[board[i][j]];
       const pos = new Pos(i,j);
       grids[pos] = grid;
       row.appendChild(grid);
     }
     dom.appendChild(row);
   }
+  // Then populate it
+  let sparse = f[0];
+  sparse.forEach(function (cellEntry) {
+    let pos = cellEntry._0_;
+    let content = cellEntry._1_;
+    if (typeof content.wall !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "wall";
+    }
+  })
 }
 
 let pendingMoves = [];
