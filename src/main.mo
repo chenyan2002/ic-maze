@@ -87,6 +87,10 @@ class Maze() {
             };
         };
     };
+    public func getSeq(id: Principal) : Nat {
+        let state = Option.unwrap(players.get(id));
+        state.seq
+    };
     func outputHeap(x: Heap.Heap<Msg>) : [Msg] {
         let buf = Buf.Buf<Msg>(3);
         label L loop {
@@ -128,14 +132,14 @@ actor {
     public query func getState() : async [OutputState] {
         maze.outputState()
     };
-    public query func getMap() : async [OutputGrid] {
-        maze.outputMap()
+    public query(msg) func getMap() : async ([OutputGrid], Nat) {
+        (maze.outputMap(), maze.getSeq(msg.caller))
     };
-    public query(msg) func fakeMove(dirs : [Msg]) : async [OutputGrid] {
+    public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
         let id = msg.caller;
         for (dir in dirs.vals()) {
             maze.move(id, dir);
         };
-        maze.outputMap()
+        (maze.outputMap(), maze.getSeq(id))
     };
 };

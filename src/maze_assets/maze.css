@@ -45,7 +45,8 @@
   content: "\1F381";
 }
 #maze div.temp::after {
-    background-color: #aa8888;
+    background-color: #aa3388;
+    opacity: 0.6;
 }
 #maze div.hero::after {
   content: "\1F6B6" !important;

@@ -59,12 +59,13 @@ async function mazeKeyPressHandler(e) {
   msg.dir = dir;
   canister.move(msg);
   pendingMoves.push(msg);
-  //console.log(pendingMoves);
   const tmp = await canister.fakeMove(pendingMoves);
   tmpState.update(tmp);
+  pendingMoves = pendingMoves.filter(m => m.seq > processedSeq);
   await render();
   e.preventDefault();
 }
+
 
 async function render() {
   const res = await canister.getMap();
@@ -85,8 +86,9 @@ class Pos {
 }
 
 class Map {
-  constructor() {
+  constructor(isFinal) {
     this._grids = [];
+    this._isFinal = isFinal;
   };
   static getGridType(content) {
     if (content.hasOwnProperty("wall")) {
@@ -98,8 +100,9 @@ class Map {
   }
   // update map and draw the diff
   update(g) {
+    processedSeq = g[1];
     const new_grids = [];    
-    g.forEach(grid => {
+    g[0].forEach(grid => {
       const pos = Pos.fromPos(grid._0_);
       new_grids[pos] = Map.getGridType(grid._1_);
     });
@@ -107,10 +110,18 @@ class Map {
     for (const pos in this._grids) {
       const type = this._grids[pos];
       grids[pos].classList.remove(type);
+      if (!this._isFinal) {
+        grids[pos].classList.remove("temp");
+      }
     }
     for (const pos in new_grids) {
       const type = new_grids[pos];
       grids[pos].classList.add(type);
+      if (!this._isFinal) {
+        grids[pos].classList.add("temp");
+      } else {
+        grids[pos].classList.remove("temp");        
+      }
     }
 
     this._grids = new_grids;
@@ -121,10 +132,11 @@ class Map {
 // HTMLElements for maze, indexed by Pos class
 const grids = [];
 
-let state = new Map();
-let tmpState = new Map();
+let state = new Map(true);
+let tmpState = new Map(false);
 let myid;
 let myseq;
+let processedSeq;
 
 const maze = document.createElement('div');
 maze.id = "maze";
