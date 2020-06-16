@@ -49,7 +49,8 @@
     opacity: 0.6;
 }
 #maze div.hero::after {
-  content: "\1F6B6" !important;
+  content: url(https://dfinity.org/static/0d206f7f9157235a931bd50a4c664d70/67d6c/motokoLogo.png) !important;
+  transform: scale(0.2);
 }
 #maze.face-right div.hero::after {
   transform: scale(-1, 1);
