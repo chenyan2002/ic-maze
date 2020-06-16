@@ -32,6 +32,8 @@ function generateMaze(dom) {
   }
 }
 
+const pendingMoves = [];
+
 async function mazeKeyPressHandler(e) {
   let dir;
   switch(e.keyCode) {
@@ -52,14 +54,21 @@ async function mazeKeyPressHandler(e) {
   default:
     return;
   }
-  canister.move(dir);
-  const tmp = await canister.fakeMove(dir);
+  const msg = {};
+  msg.seq = myseq++;
+  msg.dir = dir;
+  canister.move(msg);
+  pendingMoves.push(msg);
+  //console.log(pendingMoves);
+  const tmp = await canister.fakeMove(pendingMoves);
   tmpState.update(tmp);
+  //console.log(tmpState);
+  await render();
   e.preventDefault();
 }
 
 async function render() {
-  const res = await canister.getState();
+  const res = await canister.getMap();
   state.update(res);
 }
 
@@ -76,22 +85,36 @@ class Pos {
   }
 }
 
-class State {
+class Map {
   constructor() {
-    this._state = [];
+    this._grids = [];
   };
-  update(state) {
-    const new_state = state.map(e => {
-      const pos = Pos.fromPos(e._1_);
-      return [e._0_, pos];
+  static getGridType(content) {
+    if (content.hasOwnProperty("wall")) {
+      return "wall"
+    } else if (content.hasOwnProperty("person")) {
+      return "hero"
+    } else
+      return ""
+  }
+  // update map and draw the diff
+  update(g) {
+    const new_grids = [];    
+    g.forEach(grid => {
+      const pos = Pos.fromPos(grid._0_);
+      new_grids[pos] = Map.getGridType(grid._1_);
     });
-    for (const [id, pos] of this._state) {
-      grids[pos].classList.remove('hero');
+
+    for (const pos in this._grids) {
+      const type = this._grids[pos];
+      grids[pos].classList.remove(type);
     }
-    for (const [id, pos] of new_state) {
-      grids[pos].classList.add('hero');
+    for (const pos in new_grids) {
+      const type = new_grids[pos];
+      grids[pos].classList.add(type);
     }
-    this._state = new_state;
+
+    this._grids = new_grids;
   }
 }
 
@@ -99,9 +122,10 @@ class State {
 // HTMLElements for maze, indexed by Pos class
 const grids = [];
 
-let state = new State();
-let tmpState = new State();
+let state = new Map();
+let tmpState = new Map();
 let myid;
+let myseq;
 
 const maze = document.createElement('div');
 maze.id = "maze";
@@ -121,8 +145,9 @@ async function init() {
 
   join.addEventListener('click', () => {
     (async () => {
-      const id = await canister.join();
-      myid = id;
+      const res = await canister.join();
+      myid = res[0];
+      myseq = res[1].toNumber();
       render();
     })();
   });
@@ -130,4 +155,4 @@ async function init() {
 
 init();
 
-setInterval(render, 100);
+setInterval(render, 300);
