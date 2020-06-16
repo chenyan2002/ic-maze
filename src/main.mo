@@ -13,7 +13,7 @@ import Buf "mo:base/Buf";
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
 
-type Content = { #person: Principal; #wall };
+type Content = { #person: Principal; #wall; #trophy };
 
 type Msg = { seq: Nat; dir: Direction };
 func msgOrd(x: Msg, y: Msg) : {#lt;#gt} { if (x.seq < y.seq) #lt else #gt };
@@ -42,7 +42,7 @@ class Maze() {
         [1,0,1,1,1,1,1,0,0,1],
         [1,0,1,0,0,0,1,0,0,1],
         [1,0,1,0,0,0,0,0,0,1],
-        [1,0,1,0,0,0,1,0,0,1],
+        [1,0,1,0,0,2,1,0,0,1],
         [1,0,1,0,1,1,1,0,0,1],
         [1,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,1],
@@ -57,6 +57,9 @@ class Maze() {
             for (j in Iter.range(0, N-1)) {
                 if (MAZE_INPUT[i][j] == 1) {
                     m.set({x=i; y=j}, #wall);
+                };
+                if (MAZE_INPUT[i][j] == 2) {
+                    m.set({x=i; y=j}, #trophy);
                 };
             };
         };
