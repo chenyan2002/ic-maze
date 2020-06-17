@@ -86,6 +86,11 @@ async function mazeKeyPressHandler(e) {
 
 
 async function render() {
+  const list = await canister.getPlayers();
+  list.forEach(tuple => {
+    playerList[tuple._0_.toText()] = tuple._1_.toNumber() % 7;
+  });
+  
   const res = await canister.getMap();
   state.update(res);
   const pending = myseq - processedSeq;
@@ -116,7 +121,8 @@ class Map {
     if (content.hasOwnProperty("wall")) {
       return "wall"
     } else if (content.hasOwnProperty("person")) {
-      return "hero"
+      const ind = playerList[content.person.toText()];
+      return "hero" + ind;
     } else if (content.hasOwnProperty("trophy")) {
       return "trophy"
     } else if (content.hasOwnProperty("plant")) {
@@ -181,6 +187,7 @@ let tmpState = new Map(false);
 let myid;
 let myseq;
 let processedSeq;
+let playerList = {};
 
 const score = document.createElement('div');
 score.id = "maze_score";
@@ -211,8 +218,6 @@ async function init() {
       const res = await canister.join();
       myid = res[0];
       myseq = res[1].toNumber();
-      //const ind = await canister.getAvatar();
-      //myavatar = ind.toNumber() % 7;
       setInterval(render, 200);
     })();
   });

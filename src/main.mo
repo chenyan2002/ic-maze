@@ -218,8 +218,8 @@ class Maze() {
     public func outputMap() : [OutputGrid] {
         Iter.toArray<OutputGrid>(map.iter())
     };
-    public func getAvatar(id: Principal) : Nat {
-        Option.unwrap(profiles.get(id))
+    public func getPlayers() : [(Principal, Nat)] {
+        Iter.toArray<(Principal, Nat)>(profiles.iter())
     }
 };
 
@@ -246,8 +246,8 @@ actor {
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
         (maze.outputMap(), maze.getSeq(msg.caller))
     };
-    public query(msg) func getAvatar() : async Nat {
-        maze.getAvatar(msg.caller)
+    public query func getPlayers() : async [(Principal,Nat)] {
+        maze.getPlayers()
     };
     // Query move take all pending moves
     public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
