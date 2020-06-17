@@ -36,7 +36,7 @@ func nat2Dir(x: Nat) : Direction {
 };
 
 object Random {
-    //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
+  //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
   var x = 1;
   public func next() : Nat {
     x := (123138118391*x + 133489131) % 9999;
@@ -45,6 +45,7 @@ object Random {
 };
 
 class Maze() {
+    // TODO this should be the parameter of the class
     let MAZE_INPUT : [ [ Nat ] ] =
        [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,2,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
@@ -65,12 +66,15 @@ class Maze() {
         [1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,0,3,0,1],
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
     
-    public let N1 = 18;
-    public let N2 = 39;
+    let N1 = 18;
+    let N2 = 39;
     
-    public var beast_pos = {x = 5; y = 15};
+    var beast_pos = {x = 5; y = 15};
 
-    public let players = H.HashMap<Principal, PlayerState>(3, principalEq, Principal.hash);
+    // TODO change key from Principal to Content to represent npc and movable objects
+    let players = H.HashMap<Principal, PlayerState>(3, principalEq, Principal.hash);
+    // map principal to an index for showing avatar in the frontend
+    let profiles = H.HashMap<Principal, Nat>(3, principalEq, Principal.hash);
 
     func createInitialMap() : H.HashMap<Pos, Content> {
         var m = H.HashMap<Pos, Content>(3, posEq, posHash);
@@ -113,11 +117,12 @@ class Maze() {
                             break L 
                         };
                     };
-                };  
+                };
                 let state = { pos = npos; seq = 0; msgs = Heap.Heap<Msg>(msgOrd) };
                 players.set(id, state);
                 map.set(npos, #person(id));
-                state      
+                profiles.set(id, profiles.count());
+                state
             };
         };
     };
@@ -213,6 +218,9 @@ class Maze() {
     public func outputMap() : [OutputGrid] {
         Iter.toArray<OutputGrid>(map.iter())
     };
+    public func getAvatar(id: Principal) : Nat {
+        Option.unwrap(profiles.get(id))
+    }
 };
 
 
@@ -228,15 +236,20 @@ actor {
         let id = msg.caller;
         maze.move(id, dir);
     };
+    // Not used, for debugging only
     public query func getState() : async [OutputState] {
         maze.outputState()
     };
     // Output:
     // - Array of non-empty cells
-    // - Processed sequence number    
+    // - Processed sequence number
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
         (maze.outputMap(), maze.getSeq(msg.caller))
     };
+    public query(msg) func getAvatar() : async Nat {
+        maze.getAvatar(msg.caller)
+    };
+    // Query move take all pending moves
     public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
         let id = msg.caller;
         let processedSeq = maze.getSeq(msg.caller);

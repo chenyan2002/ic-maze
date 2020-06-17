@@ -45,7 +45,6 @@
   content: "\1F381";
 }
 #maze div.temp::after {
-    background-color: #45aa45;
     opacity: 0.6;
 }
 #maze div.coffee:after {
@@ -61,8 +60,8 @@
   content: "\1F3C6";
 }
 
-#maze div.alien::after {
-  background-image: url(https://tinyurl.com/yah4xfsm) !important;
+#maze div.hero1::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/alien.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -70,8 +69,8 @@
   height: 1em;
 }
 
-#maze div.arms::after {
-  background-image: url(https://tinyurl.com/y8mkh5g8) !important;
+#maze div.hero2::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/arms.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -80,7 +79,7 @@
 }
 
 #maze div.beast::after {
-  background-image: url(https://tinyurl.com/yayqy8vj) !important;
+  background-image: url(https://storage.googleapis.com/test_assets_2020/beast.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -88,8 +87,8 @@
   height: 1em;
 }
 
-#maze div.dog::after {
-  background-image: url(https://tinyurl.com/yd5h4y3l) !important;
+#maze div.hero3::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/dog.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -97,8 +96,8 @@
   height: 1em;
 }
 
-#maze div.robot::after {
-  background-image: url(https://tinyurl.com/y7b475cz) !important;
+#maze div.hero4::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/robot.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -106,8 +105,8 @@
   height: 1em;
 }
 
-#maze div.snow::after {
-  background-image: url(https://tinyurl.com/ycfptbme) !important;
+#maze div.hero5::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/snow.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";
@@ -115,8 +114,8 @@
   height: 1em;
 }
 
-#maze div.zombie::after {
-  background-image: url(https://tinyurl.com/y9j5wwhe) !important;
+#maze div.hero6::after {
+  background-image: url(https://storage.googleapis.com/test_assets_2020/zombieee.png) !important;
   background-size: 1em 1em;
   display: inline-block;
   content: "";

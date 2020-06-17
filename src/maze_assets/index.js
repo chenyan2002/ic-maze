@@ -1,4 +1,5 @@
 import canister from 'ic:canisters/maze';
+//import asset from 'ic:canisters/maze_assets';
 import './maze.css';
 
 // util for creating maze
@@ -210,6 +211,8 @@ async function init() {
       const res = await canister.join();
       myid = res[0];
       myseq = res[1].toNumber();
+      //const ind = await canister.getAvatar();
+      //myavatar = ind.toNumber() % 7;
       setInterval(render, 200);
     })();
   });
