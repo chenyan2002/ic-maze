@@ -12,9 +12,6 @@
         "entrypoint": "src/maze_assets/index.js",
         "output": "canisters/maze_assets/assets"
       },
-      "source": [
-        "src/maze_assets/assets"
-      ],
       "type": "assets"
     }
   },
