@@ -1,5 +1,6 @@
 import canister from 'ic:canisters/maze';
 import './maze.css';
+import { CanisterId } from '@dfinity/agent';
 
 // util for creating maze
 
@@ -71,26 +72,59 @@ async function mazeKeyPressHandler(e) {
   const msg = {};
   msg.seq = myseq++;
   msg.dir = dir;
+  pendingMoves.push(msg);  
   // Call move without waiting for reply
   canister.move(msg);
-  // Query move with pendingMoves
-  pendingMoves.push(msg);
-  const tmp = await canister.fakeMove(pendingMoves);
+  // Update playMessages for myself
+  playerMessages[myid] = pendingMoves;  
+  // Send p2p msgs
+  const others = state.getOtherPlayers();
+  others.forEach(id => {
+    const conn = peer.connect(id);
+    conn.on('open', () => {
+      console.log("send", pendingMoves);
+      conn.send([myid, pendingMoves]);
+      //conn.send("hi");
+    });
+  });
+
+  // Query move with playerMessages
+  // construct candid format
+  const messages = [];
+  for (const id in playerMessages) {
+    const m = {
+      _0_: CanisterId.fromHex(id),
+      _1_: playerMessages[id]
+    };
+    messages.push(m);
+  }
+  const tmp = await canister.fakeMove(messages);
   tmpState.update(tmp);
   // Remove processed moves
   pendingMoves = pendingMoves.filter(m => m.seq >= processedSeq);
+  
   await render();
   e.preventDefault();
 }
 
 
 async function render() {
+  // Draw confirmed state
   const res = await canister.getMap();
   state.update(res);
+  
   const pending = myseq - processedSeq;
   score.innerText = processedSeq.toString();
   if (pending > 0)
     score.innerText += " pending: " + pending.toString();
+  // receive p2p msgs
+  peer.on('connection', conn => {
+    conn.on('data', data => {
+      console.log("recv", data);
+      const [id, pending] = data;
+      playerMessages[id] = pending;
+    });
+  });
 }
 
 class Pos {
@@ -141,24 +175,37 @@ class Map {
     } else
       return ""
   }
+  getOtherPlayers() {
+    const list = [];
+    for (const pos in this._grids) {
+      const person = this._grids[pos].person;
+      if (typeof person !== 'undefined') {
+        const id = idToPeerId(person);
+        if (id !== myid) {
+          list.push(id);
+        }
+      }
+    }
+    return list;
+  }
   // update map and draw the diff
   update(g) {
     processedSeq = g[1];
     const new_grids = [];    
     g[0].forEach(grid => {
       const pos = Pos.fromPos(grid._0_);
-      new_grids[pos] = Map.getGridType(grid._1_);
+      new_grids[pos] = grid._1_;
     });
 
     for (const pos in this._grids) {
-      const type = this._grids[pos];
+      const type = Map.getGridType(this._grids[pos]);
       grids[pos].classList.remove(type);
       if (!this._isFinal) {
         grids[pos].classList.remove("temp");
       }
     }
     for (const pos in new_grids) {
-      const type = new_grids[pos];
+      const type = Map.getGridType(new_grids[pos]);
       grids[pos].classList.add(type);
       if (!this._isFinal) {
         grids[pos].classList.add("temp");
@@ -180,11 +227,22 @@ let tmpState = new Map(false);
 let myid;
 let myseq;
 let processedSeq;
+let peer;
+let playerMessages = [];
 
 const score = document.createElement('div');
 score.id = "maze_score";
 
-async function init() {
+function idToPeerId(principal) {
+  return principal.toText().slice(3, -2);
+}
+
+function init() {
+  const link = document.createElement('script');
+  link.setAttribute('src', 'https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js');
+  link.setAttribute('type', 'text/javascript');
+  document.getElementsByTagName("head")[0].appendChild(link);
+  
   const container = document.createElement('div');
   container.id = "maze_container";
   const maze = document.createElement('div');
@@ -197,7 +255,7 @@ async function init() {
 
   let div = document.createElement('div');
   div.id = "maze_message";
-  document.body.appendChild(div);  
+  document.body.appendChild(div);
 
   document.addEventListener("keydown", mazeKeyPressHandler, false);
   
@@ -208,9 +266,18 @@ async function init() {
   join.addEventListener('click', () => {
     (async () => {
       const res = await canister.join();
-      myid = res[0];
+      myid = idToPeerId(res[0]);
       myseq = res[1].toNumber();
-      setInterval(render, 200);
+      // create p2p object
+      peer = new Peer(myid, { debug: 2 });
+      /*peer = new Peer(peerid, {
+        host: 'localhost',
+        port: 9000,
+        path: '/myapp',
+        debug: 2
+      });*/
+      // set timer
+      //setInterval(render, 200);
     })();
   });
 }

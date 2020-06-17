@@ -21,3 +21,8 @@ A brief introduction into the game and the high-level code structure can be foun
 - `dfx build`
 - `dfx canister install --all`
 - visit `127.0.0.1:8000/?canisterId={maze_assets_canister_id}`
+
+# Start peerjs server locally
+
+- install: `npm install peer -g`
+- `peerjs --port 9000 --key peerjs --path /myapp`

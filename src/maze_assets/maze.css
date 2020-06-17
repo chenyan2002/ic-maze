@@ -45,7 +45,6 @@
   content: "\1F381";
 }
 #maze div.temp::after {
-    background-color: #45aa45;
     opacity: 0.6;
 }
 #maze div.coffee:after {
