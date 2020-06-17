@@ -11,6 +11,7 @@ This game show cases
 * how to use multiple identities
 * the IC persisting data so players can take a break and continue their game later
 * a design pattern for real-time interaction with potential conflicts
+* what does it mean to build a p2p achitecture on top of IC
 
 A brief introduction into the game and the high-level code structure can be found in this [slide set](https://docs.google.com/presentation/d/1PDUw0olB2Cz3AlXzajVfTdnjjSpwa8iaJ6QPr-9LLiQ/edit#slide=id.g88f8de98b7_1_189).
 
