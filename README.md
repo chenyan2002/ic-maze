@@ -6,8 +6,25 @@ Click the above icon to play online!
 
 # Steps to build locally
 
-- After `git clone`, run `npm install`
-- `dfx start`
-- `dfx build`
-- `dfx canister install --all`
-- visit `127.0.0.1:8000/?canisterId={maze_assets_canister_id}`
+Start two terminal windows
+
+### In terminal window 1
+```bash
+git clone git@github.com:chenyan2002/ic-maze.git
+
+npm install
+
+cd ic-maze && dfx start
+
+```
+
+### In terminal window 2
+
+```bash
+
+cd ic-maze && dfx build && dfx canister install --all
+
+```
+
+### In browser
+Visit `127.0.0.1:8000/?canisterId={maze_assets_canister_id}`
