@@ -3,16 +3,17 @@ import './maze.css';
 
 // util for creating maze
 
-const N = 10;
+const N1 = 19;
+const N2 = 39;
 
-const symbols = [ "", "wall", "hero", "trophy", "beast", "alien", "arms", "dog", "snow", "robot", "zombie" ];
+const symbols = [ "", "wall", "hero", "trophy", "beast", "alien", "arms", "dog", "snow", "robot", "zombie", "coffee", "plant", "olive"];
 
 async function generateMaze(dom) {
   let f = await canister.getMap();
   // First create the empty map
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < N1; i++) {
     const row = document.createElement('div');
-    for (let j = 0; j < N; j++) {
+    for (let j = 0; j < N2; j++) {
       const grid = document.createElement('div');
       const pos = new Pos(i,j);
       grids[pos] = grid;
@@ -30,6 +31,15 @@ async function generateMaze(dom) {
     }
     if (typeof content.trophy !== 'undefined') {
       grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "trophy";
+    }
+    if (typeof content.coffee !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "coffee";
+    }
+    if (typeof content.olive !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "olive";
+    }
+    if (typeof content.plant !== 'undefined') {
+      grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "plant";
     }
     if (typeof content.beast !== 'undefined') {
       grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "beast";
@@ -108,6 +118,12 @@ class Map {
       return "hero"
     } else if (content.hasOwnProperty("trophy")) {
       return "trophy"
+    } else if (content.hasOwnProperty("plant")) {
+      return "plant"
+    } else if (content.hasOwnProperty("olive")) {
+      return "olive"
+    } else if (content.hasOwnProperty("coffee")) {
+      return "coffee"
     } else if (content.hasOwnProperty("alien")) {
       return "alien"
     } else if (content.hasOwnProperty("arms")) {

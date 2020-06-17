@@ -13,7 +13,7 @@ import Buf "mo:base/Buf";
 type Pos = { x : Nat; y : Nat };
 type Direction = { #left; #right; #up; #down };
 
-type Content = { #person: Principal; #wall; #trophy; #beast };
+type Content = { #person: Principal; #wall; #trophy; #beast; #coffee; #plant; #olive };
 
 type Msg = { seq: Nat; dir: Direction };
 func msgOrd(x: Msg, y: Msg) : {#lt;#gt} { if (x.seq < y.seq) #lt else #gt };
@@ -46,42 +46,50 @@ object Random {
 
 class Maze() {
     let MAZE_INPUT : [ [ Nat ] ] =
-        [[1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,0,0,1],
-        [1,0,1,0,0,0,1,0,0,1],
-        [1,0,1,0,0,0,0,0,0,1],
-        [1,0,1,0,0,2,1,0,0,1],
-        [1,0,1,0,1,1,1,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1]];
-    public let N = 10;
+       [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,2,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,1,1,1,0,1,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,0,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,1,0,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,0,3,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
     
-    public var beast_pos = {x = 1; y = 1};
+    public let N1 = 18;
+    public let N2 = 39;
+    
+    public var beast_pos = {x = 5; y = 15};
 
     public let players = H.HashMap<Principal, PlayerState>(3, principalEq, Principal.hash);
 
-
-    func newPos(pos:Pos, dir:Direction) : Pos {
-        let npos = switch (dir) {
-            case (#left) { x = pos.x; y = (pos.y - 1) % N };
-            case (#right) { x = pos.x; y = (pos.y + 1) % N };
-            case (#up) { x = (pos.x - 1) % N; y = pos.y };
-            case (#down) { x = (pos.x + 1) % N; y = pos.y };                                  
-        };
-        npos
-    };
-
     func createInitialMap() : H.HashMap<Pos, Content> {
         var m = H.HashMap<Pos, Content>(3, posEq, posHash);
-        for (i in Iter.range(0, N-1)) {
-            for (j in Iter.range(0, N-1)) {
+        for (i in Iter.range(0, N1-1)) {
+            for (j in Iter.range(0, N2-1)) {
                 if (MAZE_INPUT[i][j] == 1) {
                     m.set({x=i; y=j}, #wall);
                 };
                 if (MAZE_INPUT[i][j] == 2) {
                     m.set({x=i; y=j}, #trophy);
+                };
+                if (MAZE_INPUT[i][j] == 3) {
+                    m.set({x=i; y=j}, #coffee);
+                };
+                if (MAZE_INPUT[i][j] == 4) {
+                    m.set({x=i; y=j}, #plant);
+                };
+                if (MAZE_INPUT[i][j] == 5) {
+                    m.set({x=i; y=j}, #olive);
                 };
             };
         };
@@ -94,12 +102,12 @@ class Maze() {
         switch (players.get(id)) {
             case (?state) { state };
             case null {
-                var npos = { x = Random.next() % N; y = Random.next() % N };
+                var npos = { x = Random.next() % N1; y = Random.next() % N2 };
                 label L loop {
                     switch (map.get(npos)) {
                       case (?content) {
                             //blocked
-                            npos := { x = Random.next() % N; y = Random.next() % N };
+                            npos := { x = Random.next() % N1; y = Random.next() % N2 };
                         };
                         case null { 
                             break L 
@@ -113,6 +121,17 @@ class Maze() {
             };
         };
     };
+
+    func newPos(pos:Pos, dir:Direction) : Pos {
+        let npos = switch (dir) {
+            case (#left) { x = pos.x; y = (pos.y - 1) % N2 };
+            case (#right) { x = pos.x; y = (pos.y + 1) % N2 };
+            case (#up) { x = (pos.x - 1) % N1; y = pos.y };
+            case (#down) { x = (pos.x + 1) % N1; y = pos.y };                                  
+        };
+        npos
+    };
+
     public func move(id: Principal, msg: Msg) {
         let state = Option.unwrap(players.get(id));
         if (state.seq <= msg.seq) {
