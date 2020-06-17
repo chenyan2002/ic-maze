@@ -1,6 +1,6 @@
 import canister from 'ic:canisters/maze';
-//import asset from 'ic:canisters/maze_assets';
 import './maze.css';
+import { CanisterId } from '@dfinity/agent';
 
 // util for creating maze
 
@@ -56,23 +56,36 @@ async function mazeKeyPressHandler(e) {
   const msg = {};
   msg.seq = myseq++;
   msg.dir = dir;
+  pendingMoves.push(msg);  
   // Call move without waiting for reply
   canister.move(msg);
-  // Query move with pendingMoves
-  pendingMoves.push(msg);
-  const tmp = await canister.fakeMove(pendingMoves);
+  // Update playMessages for myself
+  playerMessages[myid] = pendingMoves;  
+  // Send p2p msgs
+  const others = state.getOtherPlayers();
+  others.forEach(id => {
+    const conn = peer.connect(id);
+    conn.on('open', () => {
+      console.log("send", pendingMoves);
+      conn.send([myid, pendingMoves]);
+      //conn.send("hi");
+    });
+  });
+
+  // Query move with playerMessages
+  // construct candid format
+  const messages = [];
+  for (const id in playerMessages) {
+    const m = {
+      _0_: CanisterId.fromHex(id),
+      _1_: playerMessages[id]
+    };
+    messages.push(m);
+  }
+  const tmp = await canister.fakeMove(messages);
   tmpState.update(tmp);
   // Remove processed moves
   pendingMoves = pendingMoves.filter(m => m.seq >= processedSeq);
-  // send p2p msgs
-  const others = tmpState.getOtherPlayers();
-  others.forEach(id => {
-    const conn = peer.connect(id, { debug: 2 });
-    conn.on('open', () => {
-      console.log("send", pendingMoves);
-      conn.send(pendingMoves);
-    });
-  });
   
   await render();
   e.preventDefault();
@@ -80,8 +93,10 @@ async function mazeKeyPressHandler(e) {
 
 
 async function render() {
+  // Draw confirmed state
   const res = await canister.getMap();
   state.update(res);
+  
   const pending = myseq - processedSeq;
   score.innerText = processedSeq.toString();
   if (pending > 0)
@@ -90,6 +105,8 @@ async function render() {
   peer.on('connection', conn => {
     conn.on('data', data => {
       console.log("recv", data);
+      const [id, pending] = data;
+      playerMessages[id] = pending;
     });
   });
 }
@@ -125,8 +142,8 @@ class Map {
     for (const pos in this._grids) {
       const person = this._grids[pos].person;
       if (typeof person !== 'undefined') {
-        const id = person.toText().slice(3);
-        if (id != myid) {
+        const id = idToPeerId(person);
+        if (id !== myid) {
           list.push(id);
         }
       }
@@ -173,9 +190,14 @@ let myid;
 let myseq;
 let processedSeq;
 let peer;
+let playerMessages = [];
 
 const score = document.createElement('div');
 score.id = "maze_score";
+
+function idToPeerId(principal) {
+  return principal.toText().slice(3, -2);
+}
 
 function init() {
   const link = document.createElement('script');
@@ -206,17 +228,18 @@ function init() {
   join.addEventListener('click', () => {
     (async () => {
       const res = await canister.join();
-      myid = res[0].toText().slice(3);
+      myid = idToPeerId(res[0]);
       myseq = res[1].toNumber();
       // create p2p object
-      peer = new Peer(myid, {
+      peer = new Peer(myid, { debug: 2 });
+      /*peer = new Peer(peerid, {
         host: 'localhost',
         port: 9000,
         path: '/myapp',
         debug: 2
-      });
+      });*/
       // set timer
-      setInterval(render, 200);
+      //setInterval(render, 200);
     })();
   });
 }

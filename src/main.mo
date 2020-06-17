@@ -173,20 +173,23 @@ actor {
         let id = msg.caller;
         maze.move(id, dir);
     };
+    // Not needed. For debugging only
     public query func getState() : async [OutputState] {
         maze.outputState()
     };
     // Output:
     // - Array of non-empty cells
-    // - Processed sequence number    
+    // - Processed sequence number
     public query(msg) func getMap() : async ([OutputGrid], Nat) {
         (maze.outputMap(), maze.getSeq(msg.caller))
     };
-    public query(msg) func fakeMove(dirs : [Msg]) : async ([OutputGrid], Nat) {
-        let id = msg.caller;
+    // query move takes pending moves from all players
+    public query(msg) func fakeMove(dirs : [(Principal, [Msg])]) : async ([OutputGrid], Nat) {
         let processedSeq = maze.getSeq(msg.caller);
-        for (dir in dirs.vals()) {
-            maze.move(id, dir);
+        for ((id, msgs) in dirs.vals()) {
+            for (m in msgs.vals()) {
+                maze.move(id, m);
+            };
         };
         (maze.outputMap(), processedSeq)
     };
