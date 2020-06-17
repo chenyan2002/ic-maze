@@ -14,7 +14,7 @@ git clone git@github.com:chenyan2002/ic-maze.git
 
 cd ic-maze && npm install
 
-cd ic-maze && dfx start
+dfx start
 
 ```
 
