@@ -12,7 +12,7 @@ Start two terminal windows
 ```bash
 git clone git@github.com:chenyan2002/ic-maze.git
 
-npm install
+cd ic-maze && npm install
 
 cd ic-maze && dfx start
 
