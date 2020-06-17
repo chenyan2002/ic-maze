@@ -15,6 +15,10 @@ This game show cases
 
 A brief introduction into the game and the high-level code structure can be found in this [slide set](https://docs.google.com/presentation/d/1PDUw0olB2Cz3AlXzajVfTdnjjSpwa8iaJ6QPr-9LLiQ/edit#slide=id.g88f8de98b7_1_189).
 
+# Future work
+
+* webRTC + synchronization with IC: https://github.com/chenyan2002/ic-maze/pull/13 (can see peer moves from console log, but have high CPU usage)
+
 # Steps to build locally
 
 - After `git clone`, run `npm install`
