@@ -37,7 +37,7 @@ func nat2Dir(x: Nat) : Direction {
 
 object Random {
   //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
-  var x = 1;
+  var x = 2;
   public func next() : Nat {
     x := (123138118391*x + 133489131) % 9999;
     x
@@ -145,7 +145,7 @@ class Maze() {
         processState(id);
     };
     public func moveBeast() {
-        let npos = newPos(beast_pos, nat2Dir(Random.next()));
+        let npos = newPos(beast_pos, nat2Dir(Random.next()%2));
         switch (map.get(npos)) {
             case (?content) {
                 //blocked
