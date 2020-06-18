@@ -37,7 +37,7 @@ func nat2Dir(x: Nat) : Direction {
 
 object Random {
   //stolen from https://github.com/dfinity-lab/Life-Demo/blob/master/src/lifer/main.mo#L5
-  var x = 2;
+  var x = 1;
   public func next() : Nat {
     x := (123138118391*x + 133489131) % 9999;
     x
