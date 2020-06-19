@@ -145,7 +145,7 @@ class Maze() {
         processState(id);
     };
     public func moveBeast() {
-        let npos = newPos(beast_pos, nat2Dir(Random.next()));
+        let npos = newPos(beast_pos, nat2Dir(Random.next()%2));
         switch (map.get(npos)) {
             case (?content) {
                 //blocked
