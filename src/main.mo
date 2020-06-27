@@ -16,7 +16,7 @@ type Direction = { #left; #right; #up; #down };
 type Content = { #person: Principal; #wall; #trophy; #beast; #coffee; #plant; #olive };
 
 type Msg = { seq: Nat; dir: Direction };
-func msgOrd(x: Msg, y: Msg) : {#lt;#gt} { if (x.seq < y.seq) #lt else #gt };
+func msgOrd(x: Msg, y: Msg) : {#less;#greater} { if (x.seq < y.seq) #less else #greater };
 type PlayerState = { pos: Pos; seq: Nat; msgs: Heap.Heap<Msg>  };
 
 type OutputState = (Principal, { pos: Pos; seq: Nat; msgs: [Msg] });
@@ -24,7 +24,7 @@ type OutputGrid = (Pos, Content);
 
 func principalEq(x: Principal, y: Principal) : Bool = x == y;
 func posEq(x: Pos, y: Pos) : Bool = x.x == y.x and x.y == y.y;
-func posHash(x: Pos) : Hash.Hash = Hash.hashOfIntAcc(Hash.hashOfInt(x.x), x.y);
+func posHash(x: Pos) : Hash.Hash = Hash.hash(x.x) ^ Hash.hash(x.y);
 func nat2Dir(x: Nat) : Direction {
     let dir = switch (x % 4) {
         case (0) { #left };
@@ -81,23 +81,23 @@ class Maze() {
         for (i in Iter.range(0, N1-1)) {
             for (j in Iter.range(0, N2-1)) {
                 if (MAZE_INPUT[i][j] == 1) {
-                    m.set({x=i; y=j}, #wall);
+                    m.put({x=i; y=j}, #wall);
                 };
                 if (MAZE_INPUT[i][j] == 2) {
-                    m.set({x=i; y=j}, #trophy);
+                    m.put({x=i; y=j}, #trophy);
                 };
                 if (MAZE_INPUT[i][j] == 3) {
-                    m.set({x=i; y=j}, #coffee);
+                    m.put({x=i; y=j}, #coffee);
                 };
                 if (MAZE_INPUT[i][j] == 4) {
-                    m.set({x=i; y=j}, #plant);
+                    m.put({x=i; y=j}, #plant);
                 };
                 if (MAZE_INPUT[i][j] == 5) {
-                    m.set({x=i; y=j}, #olive);
+                    m.put({x=i; y=j}, #olive);
                 };
             };
         };
-        m.set(beast_pos, #beast);
+        m.put(beast_pos, #beast);
         m
     };
     public let map = createInitialMap();
@@ -119,9 +119,9 @@ class Maze() {
                     };
                 };
                 let state = { pos = npos; seq = 0; msgs = Heap.Heap<Msg>(msgOrd) };
-                players.set(id, state);
-                map.set(npos, #person(id));
-                profiles.set(id, profiles.count());
+                players.put(id, state);
+                map.put(npos, #person(id));
+                profiles.put(id, profiles.size());
                 state
             };
         };
@@ -140,7 +140,7 @@ class Maze() {
     public func move(id: Principal, msg: Msg) {
         let state = Option.unwrap(players.get(id));
         if (state.seq <= msg.seq) {
-            state.msgs.add(msg);
+            state.msgs.put(msg);
         };
         processState(id);
     };
@@ -152,7 +152,7 @@ class Maze() {
             };
             case null { 
             // empty
-                map.set(npos, #beast);
+                map.put(npos, #beast);
                 ignore map.remove(beast_pos);
                 beast_pos := npos;  
             };
@@ -167,21 +167,21 @@ class Maze() {
                      if (state.seq > msg.seq) Prelude.unreachable();
                      if (state.seq < msg.seq) return;
                      moveBeast();
-                     state.msgs.removeMin();
+                     state.msgs.deleteMin();
                      // seq matches, try move the position
                      let npos = newPos(state.pos, msg.dir);   
                      switch (map.get(npos)) {
                      case (?content) {
                               // blocked
                               let new_state = { pos = state.pos; seq = msg.seq + 1; msgs = state.msgs };
-                              players.set(id, new_state);
+                              players.put(id, new_state);
                           };
                      case null {
                               // empty
-                              map.set(npos, #person(id));
-                              ignore map.remove(state.pos);
+                              map.put(npos, #person(id));
+                              map.delete(state.pos);
                               let new_state = { pos = npos; seq = msg.seq + 1; msgs = state.msgs };
-                              players.set(id, new_state);
+                              players.put(id, new_state);
                           };
                      };
                  };
@@ -201,25 +201,24 @@ class Maze() {
             case null { break L };
             case (?msg) {
                      buf.add(msg);
-                     x.removeMin();
+                     x.deleteMin();
                  };
             };
         };
         buf.toArray()
     };
     public func outputState() : [OutputState] {
-        let array = Iter.toArray<(Principal, PlayerState)>(players.iter());
-        Array.map<(Principal, PlayerState), OutputState>(
+        let array = Iter.toArray<(Principal, PlayerState)>(players.entries());
+        Array.map<(Principal, PlayerState), OutputState>(array, 
           func ((id, state)) {
               (id, { pos = state.pos; seq = state.seq; msgs = outputHeap(state.msgs) })
-          },
-          array)
+          })
     };
     public func outputMap() : [OutputGrid] {
-        Iter.toArray<OutputGrid>(map.iter())
+        Iter.toArray<OutputGrid>(map.entries())
     };
     public func getPlayers() : [(Principal, Nat)] {
-        Iter.toArray<(Principal, Nat)>(profiles.iter())
+        Iter.toArray<(Principal, Nat)>(profiles.entries())
     }
 };
 

@@ -25,8 +25,8 @@ async function generateMaze(dom) {
   // Then populate it
   let sparse = f[0];
   sparse.forEach((cellEntry) => {
-    let pos = cellEntry._0_;
-    let content = cellEntry._1_;
+    let pos = cellEntry[0];
+    let content = cellEntry[1];
     if (typeof content.wall !== 'undefined') {
       grids[new Pos(pos.x.c[0], pos.y.c[0])].className = "wall";
     }
@@ -88,7 +88,7 @@ async function mazeKeyPressHandler(e) {
 async function render() {
   const list = await canister.getPlayers();
   list.forEach(tuple => {
-    playerList[tuple._0_.toText()] = tuple._1_.toNumber() % 7;
+    playerList[tuple[0].toText()] = tuple[1].toNumber() % 7;
   });
   
   const res = await canister.getMap();
@@ -153,8 +153,8 @@ class Map {
     processedSeq = g[1];
     const new_grids = [];    
     g[0].forEach(grid => {
-      const pos = Pos.fromPos(grid._0_);
-      new_grids[pos] = Map.getGridType(grid._1_);
+      const pos = Pos.fromPos(grid[0]);
+      new_grids[pos] = Map.getGridType(grid[1]);
     });
 
     for (const pos in this._grids) {
