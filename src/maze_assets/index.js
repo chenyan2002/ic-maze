@@ -4,7 +4,7 @@ import './maze.css';
 
 // util for creating maze
 
-const N1 = 19;
+const N1 = 18;
 const N2 = 39;
 
 const symbols = [ "", "wall", "hero", "trophy", "beast", "alien", "arms", "dog", "snow", "robot", "zombie", "coffee", "plant", "olive"];
